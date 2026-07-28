@@ -36,7 +36,7 @@ On Claude Code:
 
 1. Read your system prompt to detect your own model **family** (Opus, Sonnet, or Haiku). Ignore the version digits — the Agent tool's `model` parameter takes the family name (`"opus"` / `"sonnet"` / `"haiku"`), and the runtime resolves to the latest version in that family.
 2. Call `AskUserQuestion` with:
-   - Question: `"Which Claude model should the 12 audit agents use?"`
+   - Question: `"Which Claude model should the 16 audit agents use?"`
    - Three single-select options. Mark the orchestrator's own family as `(Recommended)` and place it first.
    - On each option, set the `description` field to `latest`.
    - On each option, set the `preview` field verbatim (preserve all whitespace exactly — the box widths must stay equal across all three):
@@ -87,16 +87,20 @@ Then build all bundles in a single Bash command using `cat` (not shell variables
 | `agent-10-bundle.md`  | `source.md` + `senior-auditor-sop.md` + `hacking-agents/numerical-gap-agent.md` + `hacking-agents/shared-rules.md`                             |
 | `agent-11-bundle.md`  | `source.md` + `senior-auditor-sop.md` + `hacking-agents/trust-gap-agent.md` + `hacking-agents/shared-rules.md`                                 |
 | `agent-12-bundle.md`  | `source.md` + `senior-auditor-sop.md` + `hacking-agents/flow-gap-agent.md` + `hacking-agents/shared-rules.md`                                  |
+| `agent-13-bundle.md`  | `source.md` + `senior-auditor-sop.md` + `hacking-agents/signature-replay-agent.md` + `hacking-agents/shared-rules.md`                          |
+| `agent-14-bundle.md`  | `source.md` + `senior-auditor-sop.md` + `hacking-agents/proxy-upgrade-agent.md` + `hacking-agents/shared-rules.md`                              |
+| `agent-15-bundle.md`  | `source.md` + `senior-auditor-sop.md` + `hacking-agents/dos-griefing-agent.md` + `hacking-agents/shared-rules.md`                               |
+| `agent-16-bundle.md`  | `source.md` + `senior-auditor-sop.md` + `hacking-agents/amm-nav-agent.md` + `hacking-agents/shared-rules.md`                                    |
 
 Each bundle = source.md + SOP + specialty + shared-rules. Agents read the bundle; no Read/Grep needed for the initial scan. Targeted Read/Grep allowed for cross-file investigation.
 
 Print line counts for every bundle and `source.md`. Do NOT inline source code into the Agent call prompt itself.
 
-**Turn 3a — Spawn all 12 agents.** In one message, spawn all 12 agents as **parallel BACKGROUND Agent calls** (`run_in_background=true`). If Turn 1b set `{agent_model}`, pass `model={agent_model}` on every Agent call. If `{agent_model}` is unset (Turn 1b skipped — Codex, Gemini, others), omit the `model` parameter entirely — do NOT substitute any default. The orchestrator will receive a notification when each agent completes — do NOT poll or sleep. Single phase, no later spawns. Proceed to Turn 3b only after all 12 have notified completion.
+**Turn 3a — Spawn all 16 agents.** In one message, spawn all 16 agents as **parallel BACKGROUND Agent calls** (`run_in_background=true`). If Turn 1b set `{agent_model}`, pass `model={agent_model}` on every Agent call. If `{agent_model}` is unset (Turn 1b skipped — Codex, Gemini, others), omit the `model` parameter entirely — do NOT substitute any default. The orchestrator will receive a notification when each agent completes — do NOT poll or sleep. Single phase, no later spawns. Proceed to Turn 3b only after all 16 have notified completion.
 
-Agents 1–9 use the **single-specialty prompt** (Turn 3a-i). Agents 10–12 use the **gap-hunter prompt** (Turn 3a-ii).
+Agents 1–9 and 13–16 use the **single-specialty prompt** (Turn 3a-i). Agents 10–12 use the **gap-hunter prompt** (Turn 3a-ii).
 
-**Turn 3a-i — Single-specialty prompt template (agents 1–9, substitute real values):**
+**Turn 3a-i — Single-specialty prompt template (agents 1–9 and 13–16, substitute real values):**
 
 ```
 You are an attacker. Your specialty, mindset, source, and output rules
@@ -154,11 +158,11 @@ Output format: see shared-rules.md inside your bundle (gap-hunter-specific
 output fields are in your specialty file).
 ```
 
-**Turn 3b — Wait for all 12 agents to complete.** Once every one of the 12 spawned agents has notified completion, proceed to Turn 4. Do NOT proceed to dedup until every agent has finished — let them run to natural completion. Do NOT poll or sleep; act only on completion notifications.
+**Turn 3b — Wait for all 16 agents to complete.** Once every one of the 16 spawned agents has notified completion, proceed to Turn 4. Do NOT proceed to dedup until every agent has finished — let them run to natural completion. Do NOT poll or sleep; act only on completion notifications.
 
 **Turn 4 — Deduplicate, validate & output.** Single-pass: deduplicate all agent results, gate-evaluate, and produce the final report in one turn. Do NOT print an intermediate dedup list — go straight to the report.
 
-1. **Dedup.** Parse every FINDING and LEAD from the 12 agents. Group by `group_key` (Contract | function | bug-class). Exact-match first; merge synonymous bug_class within same (Contract, function). Keep best per group, number sequentially, annotate `[agents: N]`.
+1. **Dedup.** Parse every FINDING and LEAD from the 16 agents. Group by `group_key` (Contract | function | bug-class). Exact-match first; merge synonymous bug_class within same (Contract, function). Keep best per group, number sequentially, annotate `[agents: N]`.
 
    **MANDATORY — Wide-description (group_key).** Merged group with distinct mechanisms (different `fix:`, code-level cause, or attack path) MUST list every mechanism. No dropping. Same function can have multiple coexisting bugs at the same group_key — all MUST appear.
 
@@ -191,7 +195,7 @@ output fields are in your specialty file).
 
    **Inline check before printing**: count distinct fixes from raw for this (Contract, function). ≥2 distinct but merged shows 1 → violation, add alternatives.
 
-   **MANDATORY — Completeness (HARD GATE).** Before print: list every unique (Contract, function, bug-class) in any raw FINDING/LEAD across the 12 agents. Every unique (Contract, function) MUST have ≥1 item in final. Zero = silent drop, fix it. Multiple bug-class within same (Contract, function) MAY collapse to one item (wide-description), but the (Contract, function) MUST survive. Print inline before report: `Completeness: N unique (Contract, function) in raw, N covered in final.`
+   **MANDATORY — Completeness (HARD GATE).** Before print: list every unique (Contract, function, bug-class) in any raw FINDING/LEAD across the 16 agents. Every unique (Contract, function) MUST have ≥1 item in final. Zero = silent drop, fix it. Multiple bug-class within same (Contract, function) MAY collapse to one item (wide-description), but the (Contract, function) MUST survive. Print inline before report: `Completeness: N unique (Contract, function) in raw, N covered in final.`
 
    Composite chains: if A's output feeds B's precondition AND combined impact > either alone, add `Chain: [A] + [B]` at conf = min(A, B). Most audits: 0–2.
 
