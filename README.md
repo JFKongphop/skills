@@ -14,9 +14,9 @@
 ## Install, Run & Update Prompts
 
 ```
-Install https://github.com/pashov/skills/ and run an x-ray on the codebase
-Install https://github.com/pashov/skills/ and run solidity auditor with all different agents possible on the codebase
-Install https://github.com/pashov/skills/ and run fizz on the codebase
+Install https://github.com/JFKongphop/new-skills/ and run an x-ray on the codebase
+Install https://github.com/JFKongphop/new-skills/ and run solidity auditor with all different agents possible on the codebase
+Install https://github.com/JFKongphop/new-skills/ and run fizz on the codebase
 ```
 
 ```
