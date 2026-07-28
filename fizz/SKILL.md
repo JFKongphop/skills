@@ -101,13 +101,9 @@ Run sequentially:
 4. If `forge --version` fails, stop here. Foundry is required before proceeding with the rest of the workflow.
 5. Run `bash {SKILL_PATH}/scripts/ensure_foundry.sh {PROJECT_ROOT}`.
 6. If `foundry.toml` is missing, allow `ensure_foundry.sh` to create one. If it fails, stop and report the error.
-7. Run `medusa --version`.
-8. Run `echidna --version`.
-9. If either command fails, tell the user which tool is missing and suggest installing it using the official documentation:
-   Medusa install guide: `https://secure-contracts.com/program-analysis/medusa/docs/src/getting_started/installation.html`
-   Echidna install guide: `https://secure-contracts.com/program-analysis/echidna/introduction/installation.html`
-10. If `medusa --version` fails, stop here. Medusa is required before proceeding with the rest of the workflow.
-11. If `echidna --version` fails but Foundry and Medusa are installed, you may continue, but keep the installation recommendation in the user-facing summary because Echidna is still expected for the full workflow.
+7. Run `bash {SKILL_PATH}/scripts/ensure_medusa.sh`. This script checks for Medusa and auto-installs it via Homebrew or Go if missing. If it exits non-zero, report the error and stop — Medusa is required.
+8. Run `bash {SKILL_PATH}/scripts/ensure_echidna.sh`. This script checks for Echidna and auto-installs it via Homebrew or prebuilt binary if missing. If it exits non-zero, log the warning but continue — Echidna is desired but not required if Medusa is available.
+9. After both scripts complete, run `medusa --version` and `echidna --version` to confirm the installed versions and print them to the user.
 
 ## Step 2: Compile And Extract
 
